@@ -32,8 +32,8 @@ case "$1" in
         mkdir -p "$(dirname "$NOTES_DIR/$2")"
         $EDITOR "$NOTES_DIR/$2.md"
         ;;
-    journel)
-        JOURNEL_DIR="$NOTES_DIR/journel"
+    journal)
+        JOURNEL_DIR="$NOTES_DIR/journal"
         mkdir -p "$JOURNEL_DIR"
         TODAY=$(date +%Y-%m-%d)
         $EDITOR "$JOURNEL_DIR/$TODAY.md"
