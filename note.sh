@@ -14,7 +14,7 @@ show_help() {
     echo "Usage: $0 [command] [note_name or keyword]"
     echo ""
     echo "Commands:"
-    echo "  new <note_name>     Create or edit a note"
+    echo "  open <note_name>     Create or edit a note"
     echo "  list                List all notes"
     echo "  delete <note_name>  Delete a note"
     echo "  search <keyword>    Search notes for a keyword"
@@ -24,7 +24,7 @@ show_help() {
 
 # $1 is the first command line argument passed to the shell script
 case "$1" in 
-    new)
+    open)
         # -z returns true if string is empty
         [[ -z "$2" ]] && echo "Note name required." && exit 1
         mkdir -p "$(dirname "$NOTES_DIR/$2")"
@@ -56,14 +56,19 @@ case "$1" in
             exit 1
         fi
 
+        cd "$NOTES_DIR"
+
         git pull "https://$GITHUB_TOKEN@github.com/$GITHUB_REPO.git"
         git add .
-        git commit -m "Sync notes: $(date)" || echo "No changes to commit"
+        git commit -m "Sync notes: $(date)" || echo -e "No changes to commit"
         git push "https://$GITHUB_TOKEN@github.com/$GITHUB_REPO.git"
+
         ;;
     help)
         show_help
         ;;
+    *)
+        echo "Invalid command. Use '$0 help' to see avalible commands"
 esac
 
 
