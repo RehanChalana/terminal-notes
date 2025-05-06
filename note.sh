@@ -1,16 +1,12 @@
 #!/bin/bash
 
-NOTES_DIR="./notes"
 CONFIG_FILE="./config"
 
-# -p ensures that script does not throws an error if directory already exists.
-# it also ensures that parent directories are created if they don't already exist.
-mkdir -p "$NOTES_DIR"
 
 if [[ -f "$CONFIG_FILE" ]]; then
     source "$CONFIG_FILE"
 else 
-    EDITOR="nano"
+    echo -e "Config file not found. Please create one with EDITOR, GITHUB_TOKEN, NOTES_DIR, and GITHUB_REPO."
 fi
 
 # $0 is a speacial variable that stores the filename
