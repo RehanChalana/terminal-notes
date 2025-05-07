@@ -16,8 +16,9 @@ show_help() {
     echo ""
     echo "Commands:"
     echo "  open <note_name>    Create or edit a note"
-    echo "  daily             Create or edit today's journel entry"
+    echo "  daily               Create or edit today's journel entry"
     echo "  list                List all notes"
+    echo "  rename <old_name> <new_name> rename a note"
     echo "  delete <note_name>  Delete a note"
     echo "  search <keyword>    Search notes for a keyword"
     echo "  sync                Commit & push notes to GitHub"
@@ -49,6 +50,16 @@ case "$1" in
         if [[ -f "$NOTE_PATH" ]]; then
             rm "$NOTE_PATH"
             echo "Deleted $2"
+        else 
+            echo "Note not found."
+        fi
+        ;;
+    rename)
+        [[ -z "$2" || -z "$2" ]] && echo "Both old name and new name are required." && exit 1
+        NOTE_PATH="$NOTES_DIR/$2.md"
+        if [[ -f "$NOTE_PATH" ]]; then
+            mv "$NOTE_PATH" "$NOTES_DIR/$3.md"
+            echo "Renamed $2 to $3"
         else 
             echo "Note not found."
         fi
