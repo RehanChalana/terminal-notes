@@ -17,12 +17,18 @@ show_help() {
     echo "Commands:"
     echo "  open <note_name>    Create or edit a note"
     echo "  daily               Create or edit today's journel entry"
-    echo "  list                List all notes"
     echo "  rename <old_name> <new_name> rename a note"
     echo "  delete <note_name>  Delete a note"
+    echo "  list                List all notes"
+    echo "  recent              List 5 recently edited notes"
     echo "  search <keyword>    Search notes for a keyword"
     echo "  sync                Commit & push notes to GitHub"
-    echo "  config <editor>     Set default editor (e.g., vim, nano, micro)"
+}
+
+list_notes() {
+    # sed command is removing the $NOTES_DIR prefix from the results 
+    # So we get only relative paths and file names in the result
+    find "$NOTES_DIR" -type f -name "*.md" | sed "s|$NOTES_DIR/||"
 }
 
 # $1 is the first command line argument passed to the shell script
@@ -31,6 +37,7 @@ case "$1" in
         # -z returns true if string is empty
         [[ -z "$2" ]] && echo "Note name required." && exit 1
         mkdir -p "$(dirname "$NOTES_DIR/$2")"
+        # TITLE=$(gum input --placeholder "Enter note title")
         $EDITOR "$NOTES_DIR/$2.md"
         ;;
     daily)
@@ -38,11 +45,6 @@ case "$1" in
         mkdir -p "$JOURNEL_DIR"
         TODAY=$(date +%Y-%m-%d)
         $EDITOR "$JOURNEL_DIR/$TODAY.md"
-        ;;
-    list)
-        # sed command is removing the $NOTES_DIR prefix from the results 
-        # So we get only relative paths and file names in the result
-        find "$NOTES_DIR" -type f -name "*.md" | sed "s|$NOTES_DIR/||"
         ;;
     delete)
         [[ -z "$2" ]] && echo "Note name required." && exit 1
@@ -55,7 +57,7 @@ case "$1" in
         fi
         ;;
     rename)
-        [[ -z "$2" || -z "$2" ]] && echo "Both old name and new name are required." && exit 1
+        [[ -z "$2" || -z "$3" ]] && echo "Both old name and new name are required." && exit 1
         NOTE_PATH="$NOTES_DIR/$2.md"
         if [[ -f "$NOTE_PATH" ]]; then
             mv "$NOTE_PATH" "$NOTES_DIR/$3.md"
@@ -63,6 +65,18 @@ case "$1" in
         else 
             echo "Note not found."
         fi
+        ;;
+    list)
+        list_notes
+        ;;
+    recent)
+        echo "Recent notes:"
+        find "$NOTES_DIR" -type f -name "*.md" -printf '%T@ %p\n' |
+            sort -nr | head -n 5 | cut -d' ' -f2- | sed "s|$NOTES_DIR/||"
+        ;;
+    browse)
+        FILE=$(list_notes | gum choose --header="Select a note to open")
+        [[ -n "$FILE" ]] && $EDITOR "$NOTES_DIR/$FILE"
         ;;
     search)
         [[ -z "$2" ]] && echo "Keyword required." && exit 1
@@ -81,7 +95,6 @@ case "$1" in
         git add .
         git commit -m "Sync notes: $(date)" || echo -e "No changes to commit"
         git push "https://$GITHUB_TOKEN@github.com/$GITHUB_REPO.git"
-
         ;;
     help)
         show_help
