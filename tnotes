@@ -16,7 +16,7 @@ show_help() {
     echo ""
     echo "Commands:"
     echo "  open <note_name>    Create or edit a note"
-    echo "  journel             Create or edit today's journel entry"
+    echo "  daily             Create or edit today's journel entry"
     echo "  list                List all notes"
     echo "  delete <note_name>  Delete a note"
     echo "  search <keyword>    Search notes for a keyword"
@@ -32,7 +32,7 @@ case "$1" in
         mkdir -p "$(dirname "$NOTES_DIR/$2")"
         $EDITOR "$NOTES_DIR/$2.md"
         ;;
-    journal)
+    daily)
         JOURNEL_DIR="$NOTES_DIR/journal"
         mkdir -p "$JOURNEL_DIR"
         TODAY=$(date +%Y-%m-%d)
