@@ -20,6 +20,7 @@ show_help() {
     echo "  rename <old_name> <new_name> rename a note"
     echo "  delete <note_name>  Delete a note"
     echo "  list                List all notes"
+    echo "  browse              Browse and open notes via TUI"
     echo "  recent              List 5 recently edited notes"
     echo "  search <keyword>    Search notes for a keyword"
     echo "  sync                Commit & push notes to GitHub"
@@ -37,7 +38,6 @@ case "$1" in
         # -z returns true if string is empty
         [[ -z "$2" ]] && echo "Note name required." && exit 1
         mkdir -p "$(dirname "$NOTES_DIR/$2")"
-        # TITLE=$(gum input --placeholder "Enter note title")
         $EDITOR "$NOTES_DIR/$2.md"
         ;;
     daily)
@@ -75,8 +75,34 @@ case "$1" in
             sort -nr | head -n 5 | cut -d' ' -f2- | sed "s|$NOTES_DIR/||"
         ;;
     browse)
-        FILE=$(list_notes | gum choose --header="Select a note to open")
-        [[ -n "$FILE" ]] && $EDITOR "$NOTES_DIR/$FILE"
+        CURRENT_DIR="$NOTES_DIR"
+        GO_BACK=$(gum style --foreground 190 "Go Back") # Yellow
+        EXIT=$(gum style --foreground 196 "Exit")       # Red
+
+        while true; do
+            FILE=$(gum choose --header="Select a file or folder to open" $(ls --group-directories-first "$CURRENT_DIR") "$GO_BACK" "$EXIT")
+
+            [[ "$FILE" == "Exit" ]] && echo "Exiting" && exit 0
+
+            if [[ "$FILE" == "Go Back" ]]; then
+                if [[ "$CURRENT_DIR" == "$NOTES_DIR" ]]; then
+                    echo "Already at the root directory. Cannot go back further."
+                    continue
+                else
+                    CURRENT_DIR=$(dirname "$CURRENT_DIR")
+                    continue
+                fi
+            fi
+
+            if [[ -f "$CURRENT_DIR/$FILE" && "$FILE" == *.md ]]; then
+                $EDITOR "$CURRENT_DIR/$FILE"
+                break
+            elif [[ -d "$CURRENT_DIR/$FILE" ]]; then
+                CURRENT_DIR="$CURRENT_DIR/$FILE"
+            else 
+                echo "Please select a valid Markdown file or folder."
+            fi
+        done
         ;;
     search)
         [[ -z "$2" ]] && echo "Keyword required." && exit 1
